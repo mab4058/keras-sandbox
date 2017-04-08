@@ -1,6 +1,11 @@
 '''
 ResNet Builder
 
+References:
+Deep Residual Learning for Image Recognition [https://arxiv.org/pdf/1512.03385.pdf]
+Identity Mappings in Deep Residual Networks [https://arxiv.org/pdf/1603.05027v2.pdf]
+
+
 @author: mbayer
 '''
 from keras.layers import Input
