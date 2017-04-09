@@ -70,7 +70,7 @@ def build(input_shape, num_outputs, repetitions, bottleneck=False):
     x = AveragePooling2D((s[1],s[2]), name='avg_pool')(x)
         
     x = Flatten()(x)
-    x = Dense(num_outputs, activation='softmax', name='fc1000')(x)
+    x = Dense(num_outputs, activation='softmax')(x)
 
     model = Model(input_layer, x, name='resnet')
     
