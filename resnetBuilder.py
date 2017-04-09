@@ -9,7 +9,7 @@ Identity Mappings in Deep Residual Networks [https://arxiv.org/pdf/1603.05027v2.
 @author: mbayer
 '''
 from keras.layers import Input
-from keras.layers.pooling import MaxPooling2D
+from keras.layers.pooling import MaxPooling2D, AveragePooling2D
 from keras.layers.core import Flatten, Dense
 from keras.models import Model
 
@@ -63,6 +63,11 @@ def build(input_shape, num_outputs, repetitions, bottleneck=False):
                                   block=block_num, 
                                   bottleneck=bottleneck)                
         n_filters *= 2
+        
+    # Get previous layer shape for average pooling layer.
+    temp = x.shape
+    s = (temp[0].value, temp[1].value, temp[2].value)
+    x = AveragePooling2D((s[1],s[2]), name='avg_pool')(x)
         
     x = Flatten()(x)
     x = Dense(num_outputs, activation='softmax', name='fc1000')(x)
