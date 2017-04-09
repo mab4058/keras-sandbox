@@ -17,7 +17,7 @@ from keras import backend as K
 from buildingBlocks.resnetBuildingBlocks import identityBlock, convBlock
 from buildingBlocks.basicBuildingBlocks import conv2d_bn
 
-def build(input_shape, num_outputs, repetitions, bottleneck=False):
+def build(input_shape, num_outputs, repetitions, bottleneck=False, name=None):
     """Builder function to create ResNet model architecture.
     # Arguments
     input_shape: tuple, (n_rows, n_cols, n_channels)
@@ -70,7 +70,7 @@ def build(input_shape, num_outputs, repetitions, bottleneck=False):
     x = AveragePooling2D((s[1],s[2]), name='avg_pool')(x)
         
     x = Flatten()(x)
-    x = Dense(num_outputs, activation='softmax')(x)
+    x = Dense(num_outputs, activation='softmax', name='out_fc')(x)
 
     model = Model(input_layer, x, name='resnet')
     
