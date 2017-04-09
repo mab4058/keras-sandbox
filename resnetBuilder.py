@@ -17,7 +17,7 @@ from keras import backend as K
 from buildingBlocks.resnetBuildingBlocks import identityBlock, convBlock
 from buildingBlocks.basicBuildingBlocks import conv2d_bn
 
-def build(input_shape, num_outputs, repetitions, bottleneck=False, name=None):
+def build(input_shape, num_outputs, repetitions, bottleneck=False):
     """Builder function to create ResNet model architecture.
     # Arguments
     input_shape: tuple, (n_rows, n_cols, n_channels)
