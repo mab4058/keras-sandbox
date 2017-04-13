@@ -25,8 +25,8 @@ def identityBlock(input_tensor, n_filters, kernel_size, stage, block, bottleneck
         bn_axis = 3
     else:
         bn_axis = 1
-    conv_name_base = 'res_stage{}_block{}_branch'.format(stage, block)
-    bn_name_base = 'bn_stage{}_block{}_branch'.format(stage, block)
+    conv_name_base = 'res_stage{}_block{}_branch_'.format(stage, block)
+    bn_name_base = 'bn_stage{}_block{}_branch_'.format(stage, block)
     
     if not bottleneck:
         x = Conv2D(n_filters, kernel_size,
@@ -73,8 +73,8 @@ def convBlock(input_tensor, n_filters, kernel_size, stage, block, strides=(2, 2)
         bn_axis = 3
     else:
         bn_axis = 1
-    conv_name_base = 'res_stage{}_block{}_branch'.format(stage, block)
-    bn_name_base = 'bn_stage{}_block{}_branch'.format(stage, block)
+    conv_name_base = 'res_stage{}_block{}_branch_'.format(stage, block)
+    bn_name_base = 'bn_stage{}_block{}_branch_'.format(stage, block)
     
     if not bottleneck:
         x = Conv2D(n_filters, kernel_size, strides=strides, padding='same',

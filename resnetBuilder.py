@@ -8,21 +8,24 @@ Identity Mappings in Deep Residual Networks [https://arxiv.org/pdf/1603.05027v2.
 
 @author: mbayer
 '''
+from keras import backend as K
 from keras.layers import Input
+from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.pooling import MaxPooling2D, AveragePooling2D
-from keras.layers.core import Flatten, Dense
 from keras.models import Model
 
-from keras import backend as K
-from buildingBlocks.resnetBuildingBlocks import identityBlock, convBlock
 from buildingBlocks.basicBuildingBlocks import conv2d_bn
+from buildingBlocks.resnetBuildingBlocks import identityBlock, convBlock
 
-def build(input_shape, num_outputs, repetitions, bottleneck=False):
+
+def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=False):
     """Builder function to create ResNet model architecture.
     # Arguments
     input_shape: tuple, (n_rows, n_cols, n_channels)
         num_outputs: int, The number of outputs from the model.
         repetitions: list, The repetition amounts per stage.
+        dropout_rate: float, optional: Number in range 0-1 for dropout. Enter none
+                      to ignore.
         bottleneck: bool, optional: If true, bottleneck structures will be used for
                     each block.
     
@@ -65,11 +68,16 @@ def build(input_shape, num_outputs, repetitions, bottleneck=False):
         n_filters *= 2
         
     # Get previous layer shape for average pooling layer.
-    temp = x.shape
-    s = (temp[0].value, temp[1].value, temp[2].value)
-    x = AveragePooling2D((s[1],s[2]), name='avg_pool')(x)
+#     temp = x.shape
+#     s = (temp[0].value, temp[1].value, temp[2].value)
+#     x = AveragePooling2D((s[1],s[2]), name='avg_pool')(x)
         
     x = Flatten()(x)
+    x = Dense(512, activation='relu')(x)
+    
+    if dropout_rate is not None:
+        x = Dropout(dropout_rate)(x)
+        
     x = Dense(num_outputs, activation='softmax', name='out_fc')(x)
 
     model = Model(input_layer, x, name='resnet')
