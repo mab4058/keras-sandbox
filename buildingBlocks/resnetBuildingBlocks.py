@@ -1,5 +1,5 @@
 '''
-Helper functions to compile ResNet building blocks.
+ResNet building blocks.
 
 @author: mbayer
 '''
@@ -8,9 +8,9 @@ from keras import layers
 from keras.layers.convolutional import Conv2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers import Activation
+    
 
-
-def identityBlock(input_tensor, n_filters, kernel_size, stage, block, bottleneck=False):
+def resnetIdentityBlock(input_tensor, n_filters, kernel_size, stage, block, bottleneck=False):
     """Block with no impedance shortcut. 
     # Arguments
         input_tensor: input tensor
@@ -25,8 +25,8 @@ def identityBlock(input_tensor, n_filters, kernel_size, stage, block, bottleneck
         bn_axis = 3
     else:
         bn_axis = 1
-    conv_name_base = 'res_stage{}_block{}_branch_'.format(stage, block)
     bn_name_base = 'bn_stage{}_block{}_branch_'.format(stage, block)
+    conv_name_base = 'res_stage{}_block{}_branch_'.format(stage, block)
     
     if not bottleneck:
         x = Conv2D(n_filters, kernel_size,
@@ -58,7 +58,7 @@ def identityBlock(input_tensor, n_filters, kernel_size, stage, block, bottleneck
         x = Activation('relu')(x)
     return x
 
-def convBlock(input_tensor, n_filters, kernel_size, stage, block, strides=(2, 2), bottleneck=False):
+def resnetConvBlock(input_tensor, n_filters, kernel_size, stage, block, strides=(2, 2), bottleneck=False):
     """Block with conv impedance shortcut.
     # Arguments
         input_tensor: input tensor

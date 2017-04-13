@@ -15,7 +15,7 @@ from keras.layers.pooling import MaxPooling2D, AveragePooling2D
 from keras.models import Model
 
 from buildingBlocks.basicBuildingBlocks import conv2d_bn
-from buildingBlocks.resnetBuildingBlocks import identityBlock, convBlock
+from buildingBlocks.resnetBuildingBlocks import resnetConvBlock, resnetIdentityBlock
 
 
 def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=False):
@@ -44,27 +44,27 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=F
     for stage_num, r in enumerate(repetitions):
         for block_num in range(r):
             if block_num == 0 and stage_num == 0:
-                x = convBlock(x, 
-                              n_filters, 
-                              kernel_size, 
-                              stage=stage_num, 
-                              block=block_num, 
-                              strides=(1,1), 
-                              bottleneck=bottleneck)
+                x = resnetConvBlock(x, 
+                                    n_filters, 
+                                    kernel_size, 
+                                    stage=stage_num, 
+                                    block=block_num, 
+                                    strides=(1,1), 
+                                    bottleneck=bottleneck)
             elif block_num == 0 and stage_num > 0:
-                x = convBlock(x, 
-                              n_filters, 
-                              kernel_size, 
-                              stage=stage_num, 
-                              block=block_num, 
-                              bottleneck=bottleneck)
+                x = resnetConvBlock(x, 
+                                    n_filters, 
+                                    kernel_size, 
+                                    stage=stage_num, 
+                                    block=block_num, 
+                                    bottleneck=bottleneck)
             elif block_num > 0:
-                x = identityBlock(x, 
-                                  n_filters, 
-                                  kernel_size, 
-                                  stage=stage_num, 
-                                  block=block_num, 
-                                  bottleneck=bottleneck)                
+                x = resnetIdentityBlock(x, 
+                                        n_filters, 
+                                        kernel_size, 
+                                        stage=stage_num, 
+                                        block=block_num, 
+                                        bottleneck=bottleneck)                
         n_filters *= 2
         
     # Get previous layer shape for average pooling layer.
