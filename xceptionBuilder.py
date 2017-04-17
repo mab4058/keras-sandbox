@@ -64,10 +64,15 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None):
     
     return model
 
+def saveModel(filename, model):
+    modelContents = model.to_json()
+    with open(filename, 'w+') as f:
+        f.write(modelContents)
+
 class XceptionBuilder(object):
     @staticmethod
-    def buildXception(input_shape, num_outputs):
-        return build(input_shape, num_outputs, 8)
-    
-if __name__=='__main__':
-    XceptionBuilder().buildXception((150,150,3), 4)
+    def buildXception(input_shape, num_outputs, filename=None):
+        model = build(input_shape, num_outputs, 8)
+        if filename is not None:
+            saveModel(filename, model)
+        return model
