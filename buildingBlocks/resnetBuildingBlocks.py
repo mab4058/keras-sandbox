@@ -1,6 +1,10 @@
 '''
 ResNet building blocks.
 
+References:
+    For dropout: 
+        [Study of Residual Networks for Image Recognition](http://cs231n.stanford.edu/reports/2016/pdfs/264_Report.pdf)
+
 @author: mbayer
 '''
 from keras import backend as K
@@ -40,11 +44,13 @@ def resnetIdentityBlock(input_tensor,
                    padding='same', name=conv_name_base + 'a')(input_tensor)
         x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'a')(x)
         x = Activation('relu')(x)
+        
+        if dropout_rate is not None:
+            x = Dropout(dropout_rate)(x)
     
         x = Conv2D(n_filters, kernel_size,
                    padding='same', name=conv_name_base + 'b')(x)
         x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'b')(x)
-        x = Activation('relu')(x)
     
         x = layers.add([x, input_tensor])
         x = Activation('relu')(x)
@@ -57,15 +63,15 @@ def resnetIdentityBlock(input_tensor,
                    padding='same', name=conv_name_base + 'b')(x)
         x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'b')(x)
         x = Activation('relu')(x)
+        
+        if dropout_rate is not None:
+            x = Dropout(dropout_rate)(x)
     
         x = Conv2D(n_filters*4, (1, 1), name=conv_name_base + 'c')(x)
         x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'c')(x)
     
         x = layers.add([x, input_tensor])
         x = Activation('relu')(x)
-        
-    if dropout_rate is not None:
-        x = Dropout(dropout_rate)(x)
     
     return x
 
@@ -99,11 +105,13 @@ def resnetConvBlock(input_tensor,
                    name=conv_name_base + 'a')(input_tensor)
         x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'a')(x)
         x = Activation('relu')(x)
+        
+        if dropout_rate is not None:
+            x = Dropout(dropout_rate)(x)
     
         x = Conv2D(n_filters, kernel_size, padding='same',
                    name=conv_name_base + 'b')(x)
         x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'b')(x)
-        x = Activation('relu')(x)
     
         shortcut = Conv2D(n_filters, (1, 1), strides=strides,
                           name=conv_name_base + '1')(input_tensor)
@@ -121,6 +129,9 @@ def resnetConvBlock(input_tensor,
                    name=conv_name_base + 'b')(x)
         x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'b')(x)
         x = Activation('relu')(x)
+        
+        if dropout_rate is not None:
+            x = Dropout(dropout_rate)(x)
     
         x = Conv2D(n_filters*4, (1, 1), name=conv_name_base + 'c')(x)
         x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'c')(x)
@@ -131,9 +142,6 @@ def resnetConvBlock(input_tensor,
         
         x = layers.add([x, shortcut])
         x = Activation('relu')(x)
-        
-    if dropout_rate is not None:
-        x = Dropout(dropout_rate)(x)
         
     return x
 

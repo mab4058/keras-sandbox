@@ -92,7 +92,7 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=F
 def saveModel(filename, model):
     modelContents = model.to_json()
     
-    #Keras plot_model requires pydot and graphviz to be installed.
+    # Keras plot_model requires pydot and graphviz to be installed.
     h, t = os.path.split(filename)
     n, _ = os.path.splitext(t)
     plot_file = os.path.join(h, n + '.png')
