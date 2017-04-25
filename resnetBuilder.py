@@ -20,7 +20,7 @@ from buildingBlocks.basicBuildingBlocks import conv2d_bn
 from buildingBlocks.resnetBuildingBlocks import resnetConvBlock, resnetIdentityBlock
 
 
-def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=False):
+def build(input_shape, num_outputs, repetitions, dropout_rate=None, l2_rate=None, bottleneck=False):
     """Builder function to create ResNet model architecture.
     # Arguments
     input_shape: tuple, (n_rows, n_cols, n_channels)
@@ -38,8 +38,16 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=F
         input_shape = (input_shape[2], input_shape[0], input_shape[1])
         
     input_layer = Input(input_shape)
-    input_conv = conv2d_bn(input_layer, 64, 7, strides=(2, 2), name='input_conv')
-    x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same', name='input_pool')(input_conv)
+    input_conv = conv2d_bn(input_layer,
+                           64,
+                           7,
+                           strides=(2, 2),
+                           l2_rate=l2_rate,
+                           name='input_conv')
+    x = MaxPooling2D(pool_size=(3, 3),
+                     strides=(2, 2),
+                     padding='same',
+                     name='input_pool')(input_conv)
     
     n_filters = 64
     kernel_size = 3
@@ -53,6 +61,7 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=F
                                     block=block_num,
                                     strides=(1, 1),
                                     dropout_rate=dropout_rate,
+                                    l2_rate=l2_rate,
                                     bottleneck=bottleneck)
             elif block_num == 0 and stage_num > 0:
                 x = resnetConvBlock(x,
@@ -61,6 +70,7 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=F
                                     stage=stage_num,
                                     block=block_num,
                                     dropout_rate=dropout_rate,
+                                    l2_rate=l2_rate,
                                     bottleneck=bottleneck)
             elif block_num > 0:
                 x = resnetIdentityBlock(x,
@@ -69,6 +79,7 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=F
                                         stage=stage_num,
                                         block=block_num,
                                         dropout_rate=dropout_rate,
+                                        l2_rate=l2_rate,
                                         bottleneck=bottleneck)                
         n_filters *= 2
         
@@ -81,7 +92,9 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=F
     if dropout_rate is not None:
         x = Dropout(dropout_rate)(x)
         
-    x = Dense(num_outputs, activation='softmax', name='out_fc')(x)
+    x = Dense(num_outputs, 
+              activation='softmax', 
+              name='out_fc')(x)
 
     model = Model(input_layer, x, name='resnet')
     
@@ -104,36 +117,36 @@ def saveModel(filename, model):
 
 class ResnetBuilder(object):
     @staticmethod
-    def buildResnet18(input_shape, num_outputs, filename=None):
-        model = build(input_shape, num_outputs, [2, 2, 2, 2], bottleneck=False)
+    def buildResnet18(input_shape, num_outputs, dropout_rate=None, l2_rate=None, filename=None):
+        model = build(input_shape, num_outputs, [2, 2, 2, 2], dropout_rate=dropout_rate, l2_rate=l2_rate, bottleneck=False)
         if filename is not None:
             saveModel(filename, model)
         return model
     
     @staticmethod
-    def buildResnet34(input_shape, num_outputs, filename=None):
-        model = build(input_shape, num_outputs, [3, 4, 6, 3], bottleneck=False)
+    def buildResnet34(input_shape, num_outputs, dropout_rate=None, l2_rate=None, filename=None):
+        model = build(input_shape, num_outputs, [3, 4, 6, 3], dropout_rate=dropout_rate, l2_rate=l2_rate, bottleneck=False)
         if filename is not None:
             saveModel(filename, model)
         return model
                 
     @staticmethod
-    def buildResnet50(input_shape, num_outputs, filename=None):
-        model = build(input_shape, num_outputs, [3, 4, 6, 3], bottleneck=True)
+    def buildResnet50(input_shape, num_outputs, dropout_rate=None, l2_rate=None, filename=None):
+        model = build(input_shape, num_outputs, [3, 4, 6, 3], dropout_rate=dropout_rate, l2_rate=l2_rate, bottleneck=True)
         if filename is not None:
             saveModel(filename, model)
         return model
                 
     @staticmethod
-    def buildResnet101(input_shape, num_outputs, filename=None):
-        model = build(input_shape, num_outputs, [3, 4, 23, 3], bottleneck=True)
+    def buildResnet101(input_shape, num_outputs, dropout_rate=None, l2_rate=None, filename=None):
+        model = build(input_shape, num_outputs, [3, 4, 23, 3], dropout_rate=dropout_rate, l2_rate=l2_rate, bottleneck=True)
         if filename is not None:
             saveModel(filename, model)
         return model
             
     @staticmethod
-    def buildResnet152(input_shape, num_outputs, filename=None):
-        model = build(input_shape, num_outputs, [3, 8, 36, 3], bottleneck=True)
+    def buildResnet152(input_shape, num_outputs, dropout_rate=None, l2_rate=None, filename=None):
+        model = build(input_shape, num_outputs, [3, 8, 36, 3], dropout_rate=dropout_rate, l2_rate=l2_rate, bottleneck=True)
         if filename is not None:
             saveModel(filename, model)
         return model

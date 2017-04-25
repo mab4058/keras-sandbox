@@ -9,18 +9,20 @@ References:
 '''
 from keras import backend as K
 from keras import layers
-from keras.layers.core import Dropout
-from keras.layers.convolutional import Conv2D
-from keras.layers.normalization import BatchNormalization
 from keras.layers import Activation
-    
+from keras.layers.convolutional import Conv2D
+from keras.layers.core import Dropout
+from keras.layers.normalization import BatchNormalization
+from keras.regularizers import l2
 
-def resnetIdentityBlock(input_tensor, 
-                        n_filters, 
-                        kernel_size, 
-                        stage, 
-                        block, 
-                        dropout_rate=None, 
+
+def resnetIdentityBlock(input_tensor,
+                        n_filters,
+                        kernel_size,
+                        stage,
+                        block,
+                        dropout_rate=None,
+                        l2_rate=None,
                         bottleneck=False):
     """Block with no impedance shortcut. 
     # Arguments
@@ -39,49 +41,75 @@ def resnetIdentityBlock(input_tensor,
     bn_name_base = 'bn_stage{}_block{}_branch_'.format(stage, block)
     conv_name_base = 'res_stage{}_block{}_branch_'.format(stage, block)
     
+    if l2_rate is None:
+        kernel_reg = None
+    else:
+        kernel_reg = l2(l2_rate)
+    
     if not bottleneck:
-        x = Conv2D(n_filters, kernel_size,
-                   padding='same', name=conv_name_base + 'a')(input_tensor)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'a')(x)
+        x = Conv2D(n_filters,
+                   kernel_size,
+                   padding='same',
+                   kernel_regularizer=kernel_reg,
+                   name=conv_name_base + 'a')(input_tensor)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'a')(x)
         x = Activation('relu')(x)
         
         if dropout_rate is not None:
             x = Dropout(dropout_rate)(x)
     
-        x = Conv2D(n_filters, kernel_size,
-                   padding='same', name=conv_name_base + 'b')(x)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'b')(x)
+        x = Conv2D(n_filters,
+                   kernel_size,
+                   padding='same',
+                   kernel_regularizer=kernel_reg,
+                   name=conv_name_base + 'b')(x)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'b')(x)
     
         x = layers.add([x, input_tensor])
         x = Activation('relu')(x)
     else:
-        x = Conv2D(n_filters, (1, 1), name=conv_name_base + 'a')(input_tensor)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'a')(x)
+        x = Conv2D(n_filters,
+                   1,
+                   kernel_regularizer=kernel_reg,
+                   name=conv_name_base + 'a')(input_tensor)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'a')(x)
         x = Activation('relu')(x)
     
-        x = Conv2D(n_filters, kernel_size,
-                   padding='same', name=conv_name_base + 'b')(x)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'b')(x)
+        x = Conv2D(n_filters,
+                   kernel_size,
+                   padding='same',
+                   kernel_regularizer=kernel_reg,
+                   name=conv_name_base + 'b')(x)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'b')(x)
         x = Activation('relu')(x)
         
         if dropout_rate is not None:
             x = Dropout(dropout_rate)(x)
     
-        x = Conv2D(n_filters*4, (1, 1), name=conv_name_base + 'c')(x)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'c')(x)
+        x = Conv2D(n_filters * 4,
+                   1,
+                   kernel_regularizer=kernel_reg,
+                   name=conv_name_base + 'c')(x)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'c')(x)
     
         x = layers.add([x, input_tensor])
         x = Activation('relu')(x)
     
     return x
 
-def resnetConvBlock(input_tensor, 
-                    n_filters, 
-                    kernel_size, 
-                    stage, 
-                    block, 
-                    strides=(2, 2), 
-                    dropout_rate=None, 
+def resnetConvBlock(input_tensor,
+                    n_filters,
+                    kernel_size,
+                    stage,
+                    block,
+                    strides=(2, 2),
+                    dropout_rate=None,
+                    l2_rate=None,
                     bottleneck=False):
     """Block with conv impedance shortcut.
     # Arguments
@@ -100,45 +128,79 @@ def resnetConvBlock(input_tensor,
     conv_name_base = 'res_stage{}_block{}_branch_'.format(stage, block)
     bn_name_base = 'bn_stage{}_block{}_branch_'.format(stage, block)
     
+    if l2_rate is None:
+        kernel_reg = None
+    else:
+        kernel_reg = l2(l2_rate)
+    
     if not bottleneck:
-        x = Conv2D(n_filters, kernel_size, strides=strides, padding='same',
+        x = Conv2D(n_filters,
+                   kernel_size,
+                   strides=strides,
+                   padding='same',
+                   kernel_regularizer=kernel_reg,
                    name=conv_name_base + 'a')(input_tensor)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'a')(x)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'a')(x)
         x = Activation('relu')(x)
         
         if dropout_rate is not None:
             x = Dropout(dropout_rate)(x)
     
-        x = Conv2D(n_filters, kernel_size, padding='same',
+        x = Conv2D(n_filters,
+                   kernel_size,
+                   padding='same',
+                   kernel_regularizer=kernel_reg,
                    name=conv_name_base + 'b')(x)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'b')(x)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'b')(x)
     
-        shortcut = Conv2D(n_filters, (1, 1), strides=strides,
+        shortcut = Conv2D(n_filters,
+                          1,
+                          strides=strides,
+                          kernel_regularizer=kernel_reg,
                           name=conv_name_base + '1')(input_tensor)
-        shortcut = BatchNormalization(axis=bn_axis, name=bn_name_base + '1')(shortcut)
+        shortcut = BatchNormalization(axis=bn_axis,
+                                      name=bn_name_base + '1')(shortcut)
     
         x = layers.add([x, shortcut])
         x = Activation('relu')(x)
     else:
-        x = Conv2D(n_filters, (1, 1), strides=strides,
+        x = Conv2D(n_filters,
+                   1,
+                   strides=strides,
+                   kernel_regularizer=kernel_reg,
                    name=conv_name_base + 'a')(input_tensor)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'a')(x)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'a')(x)
         x = Activation('relu')(x)
     
-        x = Conv2D(n_filters, kernel_size, padding='same',
+        x = Conv2D(n_filters,
+                   kernel_size,
+                   padding='same',
+                   kernel_regularizer=kernel_reg,
                    name=conv_name_base + 'b')(x)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'b')(x)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'b')(x)
         x = Activation('relu')(x)
         
         if dropout_rate is not None:
             x = Dropout(dropout_rate)(x)
     
-        x = Conv2D(n_filters*4, (1, 1), name=conv_name_base + 'c')(x)
-        x = BatchNormalization(axis=bn_axis, name=bn_name_base + 'c')(x)
+        x = Conv2D(n_filters * 4,
+                   1,
+                   kernel_regularizer=kernel_reg,
+                   name=conv_name_base + 'c')(x)
+        x = BatchNormalization(axis=bn_axis,
+                               name=bn_name_base + 'c')(x)
     
-        shortcut = Conv2D(n_filters*4, (1, 1), strides=strides,
+        shortcut = Conv2D(n_filters * 4,
+                          1,
+                          strides=strides,
+                          kernel_regularizer=kernel_reg,
                           name=conv_name_base + '1')(input_tensor)
-        shortcut = BatchNormalization(axis=bn_axis, name=bn_name_base + '1')(shortcut)
+        shortcut = BatchNormalization(axis=bn_axis,
+                                      name=bn_name_base + '1')(shortcut)
         
         x = layers.add([x, shortcut])
         x = Activation('relu')(x)
