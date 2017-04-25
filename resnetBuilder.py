@@ -8,6 +8,8 @@ Identity Mappings in Deep Residual Networks [https://arxiv.org/pdf/1603.05027v2.
 
 @author: mbayer
 '''
+import os
+
 from keras import backend as K
 from keras.layers import Input
 from keras.layers.core import Flatten, Dense, Dropout
@@ -36,34 +38,37 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=F
         input_shape = (input_shape[2], input_shape[0], input_shape[1])
         
     input_layer = Input(input_shape)
-    input_conv = conv2d_bn(input_layer, 64, 7, strides=(2,2), name='input_conv')
-    x = MaxPooling2D(pool_size=(3,3), strides=(2,2), padding='same', name='input_pool')(input_conv)
+    input_conv = conv2d_bn(input_layer, 64, 7, strides=(2, 2), name='input_conv')
+    x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same', name='input_pool')(input_conv)
     
     n_filters = 64
     kernel_size = 3
     for stage_num, r in enumerate(repetitions):
         for block_num in range(r):
             if block_num == 0 and stage_num == 0:
-                x = resnetConvBlock(x, 
-                                    n_filters, 
-                                    kernel_size, 
-                                    stage=stage_num, 
-                                    block=block_num, 
-                                    strides=(1,1), 
+                x = resnetConvBlock(x,
+                                    n_filters,
+                                    kernel_size,
+                                    stage=stage_num,
+                                    block=block_num,
+                                    strides=(1, 1),
+                                    dropout_rate=dropout_rate,
                                     bottleneck=bottleneck)
             elif block_num == 0 and stage_num > 0:
-                x = resnetConvBlock(x, 
-                                    n_filters, 
-                                    kernel_size, 
-                                    stage=stage_num, 
-                                    block=block_num, 
+                x = resnetConvBlock(x,
+                                    n_filters,
+                                    kernel_size,
+                                    stage=stage_num,
+                                    block=block_num,
+                                    dropout_rate=dropout_rate,
                                     bottleneck=bottleneck)
             elif block_num > 0:
-                x = resnetIdentityBlock(x, 
-                                        n_filters, 
-                                        kernel_size, 
-                                        stage=stage_num, 
-                                        block=block_num, 
+                x = resnetIdentityBlock(x,
+                                        n_filters,
+                                        kernel_size,
+                                        stage=stage_num,
+                                        block=block_num,
+                                        dropout_rate=dropout_rate,
                                         bottleneck=bottleneck)                
         n_filters *= 2
         
@@ -86,6 +91,14 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, bottleneck=F
 
 def saveModel(filename, model):
     modelContents = model.to_json()
+    
+    #Keras plot_model requires pydot and graphviz to be installed.
+    h, t = os.path.split(filename)
+    n, _ = os.path.splitext(t)
+    plot_file = os.path.join(h, n + '.png')
+    from keras.utils import plot_model
+    plot_model(model, to_file=plot_file, show_shapes=True)
+    
     with open(filename, 'w+') as f:
         f.write(modelContents)
 
@@ -94,33 +107,33 @@ class ResnetBuilder(object):
     def buildResnet18(input_shape, num_outputs, filename=None):
         model = build(input_shape, num_outputs, [2, 2, 2, 2], bottleneck=False)
         if filename is not None:
-            saveModel(filename,model)
+            saveModel(filename, model)
         return model
     
     @staticmethod
     def buildResnet34(input_shape, num_outputs, filename=None):
         model = build(input_shape, num_outputs, [3, 4, 6, 3], bottleneck=False)
         if filename is not None:
-            saveModel(filename,model)
+            saveModel(filename, model)
         return model
                 
     @staticmethod
     def buildResnet50(input_shape, num_outputs, filename=None):
         model = build(input_shape, num_outputs, [3, 4, 6, 3], bottleneck=True)
         if filename is not None:
-            saveModel(filename,model)
+            saveModel(filename, model)
         return model
                 
     @staticmethod
     def buildResnet101(input_shape, num_outputs, filename=None):
         model = build(input_shape, num_outputs, [3, 4, 23, 3], bottleneck=True)
         if filename is not None:
-            saveModel(filename,model)
+            saveModel(filename, model)
         return model
             
     @staticmethod
     def buildResnet152(input_shape, num_outputs, filename=None):
         model = build(input_shape, num_outputs, [3, 8, 36, 3], bottleneck=True)
         if filename is not None:
-            saveModel(filename,model)
-        return model        
+            saveModel(filename, model)
+        return model

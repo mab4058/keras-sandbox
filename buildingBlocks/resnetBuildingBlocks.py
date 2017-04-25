@@ -5,12 +5,19 @@ ResNet building blocks.
 '''
 from keras import backend as K
 from keras import layers
+from keras.layers.core import Dropout
 from keras.layers.convolutional import Conv2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers import Activation
     
 
-def resnetIdentityBlock(input_tensor, n_filters, kernel_size, stage, block, bottleneck=False):
+def resnetIdentityBlock(input_tensor, 
+                        n_filters, 
+                        kernel_size, 
+                        stage, 
+                        block, 
+                        dropout_rate=None, 
+                        bottleneck=False):
     """Block with no impedance shortcut. 
     # Arguments
         input_tensor: input tensor
@@ -56,9 +63,20 @@ def resnetIdentityBlock(input_tensor, n_filters, kernel_size, stage, block, bott
     
         x = layers.add([x, input_tensor])
         x = Activation('relu')(x)
+        
+    if dropout_rate is not None:
+        x = Dropout(dropout_rate)(x)
+    
     return x
 
-def resnetConvBlock(input_tensor, n_filters, kernel_size, stage, block, strides=(2, 2), bottleneck=False):
+def resnetConvBlock(input_tensor, 
+                    n_filters, 
+                    kernel_size, 
+                    stage, 
+                    block, 
+                    strides=(2, 2), 
+                    dropout_rate=None, 
+                    bottleneck=False):
     """Block with conv impedance shortcut.
     # Arguments
         input_tensor: input tensor
@@ -113,6 +131,9 @@ def resnetConvBlock(input_tensor, n_filters, kernel_size, stage, block, strides=
         
         x = layers.add([x, shortcut])
         x = Activation('relu')(x)
+        
+    if dropout_rate is not None:
+        x = Dropout(dropout_rate)(x)
         
     return x
 
