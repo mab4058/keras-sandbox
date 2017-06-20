@@ -64,12 +64,14 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, l2_rate=None
                                     l2_rate=l2_rate,
                                     bottleneck=bottleneck)
             elif block_num == 0 and stage_num > 0:
+                #x = MaxPooling2D(pool_size=(2,2))(x)
                 x = resnetConvBlock(x,
                                     n_filters,
                                     kernel_size,
                                     stage=stage_num,
                                     block=block_num,
                                     dropout_rate=dropout_rate,
+                                    strides=(2,2),
                                     l2_rate=l2_rate,
                                     bottleneck=bottleneck)
             elif block_num > 0:
@@ -90,7 +92,7 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None, l2_rate=None
 #     x = Dense(512, activation='relu')(x)
     
     if dropout_rate is not None:
-        x = Dropout(dropout_rate)(x)
+        x = Dropout(0.2)(x)
         
     x = Dense(num_outputs, 
               activation='softmax', 
@@ -149,4 +151,9 @@ class ResnetBuilder(object):
         model = build(input_shape, num_outputs, [3, 8, 36, 3], dropout_rate=dropout_rate, l2_rate=l2_rate, bottleneck=True)
         if filename is not None:
             saveModel(filename, model)
-        return model
+        return model  
+    
+if __name__ == '__main__':
+    filename = r'C:\Users\mbayer\Desktop\Keras_Models\resnetTest_2222.json'
+    m = build((150, 150, 3), 4, [2, 2, 2, 2], dropout_rate=0.15, l2_rate=0.0001, bottleneck=False)
+    saveModel(filename, m)

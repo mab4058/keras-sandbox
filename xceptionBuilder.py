@@ -7,12 +7,14 @@ Based on original code by F. Chollet [https://github.com/fchollet/keras/blob/mas
 
 @author: mbayer
 '''
+import os
+
 from keras import backend as K
 from keras.layers import Input
-from keras.layers.core import Flatten, Dense, Dropout, Activation
-from keras.layers.pooling import GlobalAveragePooling2D
 from keras.layers.convolutional import Conv2D
+from keras.layers.core import Flatten, Dense, Dropout, Activation
 from keras.layers.normalization import BatchNormalization
+from keras.layers.pooling import GlobalAveragePooling2D
 from keras.models import Model
 
 from buildingBlocks.xceptionBuildingBlocks import xceptionEntryFlow, xceptionMiddleFlow, xceptionExitFlow
@@ -66,6 +68,14 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None):
 
 def saveModel(filename, model):
     modelContents = model.to_json()
+    
+    # Keras plot_model requires pydot and graphviz to be installed.
+    h, t = os.path.split(filename)
+    n, _ = os.path.splitext(t)
+    plot_file = os.path.join(h, n + '.png')
+    from keras.utils import plot_model
+    plot_model(model, to_file=plot_file, show_shapes=True)
+    
     with open(filename, 'w+') as f:
         f.write(modelContents)
 
@@ -76,3 +86,8 @@ class XceptionBuilder(object):
         if filename is not None:
             saveModel(filename, model)
         return model
+
+
+if __name__=='__main__':
+    m = build((150,150,3), 4, 2, dropout_rate=0.3)
+    saveModel(r'C:\Users\mbayer\Desktop\Keras_Models\xceptionModel.json', m)
