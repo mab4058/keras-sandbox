@@ -1,4 +1,16 @@
+*.pyc
+dist/*
+build/*
+helios.egg-info
+archive/*
+
+# test-related
+.cache
+
+# developer environments
+.idea
 .project
 .pydevproject
-*.pyc
-archive/*
+
+# docs
+docs/_build

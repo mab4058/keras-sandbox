@@ -12,12 +12,13 @@ import os
 from keras import backend as K
 from keras.layers import Input
 from keras.layers.convolutional import Conv2D
+from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Flatten, Dense, Dropout, Activation
 from keras.layers.normalization import BatchNormalization
 from keras.layers.pooling import GlobalAveragePooling2D
 from keras.models import Model
 
-from buildingBlocks.xceptionBuildingBlocks import xceptionEntryFlow, xceptionMiddleFlow, xceptionExitFlow
+from buildingBlocks.xception_building_blocks import xceptionEntryFlow, xceptionMiddleFlow, xceptionExitFlow
 
 
 def build(input_shape, num_outputs, repetitions, dropout_rate=None):
@@ -42,6 +43,7 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None):
     x = Conv2D(64, (3, 3), use_bias=False, name='block1_conv2')(x)
     x = BatchNormalization(name='block1_conv2_bn')(x)
     x = Activation('relu', name='block1_conv2_act')(x)
+    x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2))(x)
 
     x = xceptionEntryFlow(x)
     
@@ -49,14 +51,11 @@ def build(input_shape, num_outputs, repetitions, dropout_rate=None):
         x = xceptionMiddleFlow(x, i)
         
     x = xceptionExitFlow(x)
-        
-    x = GlobalAveragePooling2D(name='global_avg_pool')(x)
-        
-#     x = Flatten()(x)
-#     x = Dense(512, activation='relu')(x)
     
     if dropout_rate is not None:
         x = Dropout(dropout_rate)(x)
+        
+    x = GlobalAveragePooling2D(name='global_avg_pool')(x)
         
     x = Dense(num_outputs, activation='softmax', name='out_fc')(x)
 
@@ -89,5 +88,5 @@ class XceptionBuilder(object):
 
 
 if __name__=='__main__':
-    m = build((150,150,3), 4, 2, dropout_rate=0.3)
+    m = build((400,600,3), 3, 4, dropout_rate=0.3)
     saveModel(r'C:\Users\mbayer\Desktop\Keras_Models\xceptionModel.json', m)

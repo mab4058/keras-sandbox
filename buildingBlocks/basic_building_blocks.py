@@ -14,13 +14,12 @@ def conv2d_bn(x,
               n_filters,
               kernel_size,
               strides=(1, 1),
-              dilation_rate=(1, 1),
               padding='same',
               activation='relu',
               l2_rate=None,
+              init='glorot_normal',
               name=None):
-    """Conv2d + Batchnorm block.
-    """
+    """Conv2d + Batchnorm + Activation block."""
     if l2_rate is None:
         kernel_reg = None
     else:
@@ -43,11 +42,9 @@ def conv2d_bn(x,
                strides=strides,
                padding=padding,
                kernel_regularizer=kernel_reg,
+               kernel_initializer=init,
                name=conv_name)(x)
     x = BatchNormalization(axis=bn_axis, name=bn_name)(x)
     x = Activation(activation)(x)
     
     return x
-
-if __name__ == '__main__':
-    pass
